@@ -7,14 +7,29 @@ require("dotenv").config();
 const PORT = process.env.PORT;
 const app = express();
 app.use(cors());
-console.log("XYZ");
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.get("/", (req, res) => {
-  return res.send("WELCOME To INSTAGRAM PAGE");
-});
+
 app.use("/auth", AuthRouter);
 app.use("/feed", PostsRouter);
+
+app.get("/", (req, res) => {
+  res.json({ message: "Hello" });
+});
+
+app.use((req, res, next) => {
+  const error = new Error("Not found");
+  error.status = 404;
+  next(error);
+});
+
+app.use((err, req, res, next) => {
+  res.status(err.status || 500).json({
+    status: err.status,
+    message: err.message,
+  });
+});
 app.listen(PORT, async () => {
   await connectDB();
   console.log(`Listening at port : ${PORT}`);
