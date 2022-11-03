@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.get("/", (req, res) => {
-  return res.send("WELCOME To INSTAGRAM");
+  return res.send("WELCOME To INSTAGRAM PAGE");
 });
 app.use("/auth", AuthRouter);
 app.use("/feed", PostsRouter);
