@@ -6,7 +6,14 @@ const AuthRouter = Router();
 
 AuthRouter.post("/signup", async (req, res) => {
   try {
-    const { password } = req.body;
+    const { email, password } = req.body;
+    const user = await UserModel.findOne({ email });
+    console.log(user);
+    if (user) {
+      return res
+        .status(500)
+        .send({ type: "error", message: "User already exists" });
+    }
     bcrypt.hash(password, 6, async function (err, hash) {
       if (err) {
         return res
@@ -29,6 +36,9 @@ AuthRouter.post("/signup", async (req, res) => {
 AuthRouter.post("/login", async (req, res) => {
   const { username, password } = req.body;
   const user = await UserModel.findOne({ username });
+  if (!user) {
+    return res.status(500).send({ type: "error", message: "User not found" });
+  }
   const hash = user.password;
   try {
     bcrypt.compare(password, hash, function (err, result) {
