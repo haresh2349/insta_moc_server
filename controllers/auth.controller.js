@@ -1,39 +1,37 @@
-const { Router } = require("express");
 const bcrypt = require("bcryptjs");
 const { UserModel } = require("../models/UserSchema");
 const jwt = require("jsonwebtoken");
-const AuthRouter = Router();
 
-AuthRouter.post("/signup", async (req, res) => {
+const registerUser = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await UserModel.findOne({ email });
-    console.log(user);
+    // console.log(user);
     if (user) {
       return res
         .status(500)
         .send({ type: "error", message: "User already exists" });
-    }
-    bcrypt.hash(password, 6, async function (err, hash) {
-      if (err) {
+    } else {
+      bcrypt.hash(password, 6, async function (err, hash) {
+        if (err) {
+          return res
+            .status(500)
+            .send({ type: "error", message: "Something went wrong" });
+        }
+        const newUser = new UserModel({ ...req.body, password: hash });
+        await newUser.save();
         return res
-          .status(500)
-          .send({ type: "error", message: "Something went wrong" });
-      }
-      const newUser = new UserModel({ ...req.body, password: hash });
-      await newUser.save();
-      return res
-        .status(201)
-        .send({ type: "success", message: "Account created successfully." });
-    });
+          .status(201)
+          .send({ type: "success", message: "Account created successfully." });
+      });
+    }
   } catch (error) {
     return res
       .status(500)
       .send({ type: "error", message: "Something went wrong" });
   }
-});
-
-AuthRouter.post("/login", async (req, res) => {
+};
+const loginUser = async (req, res) => {
   const { username, password } = req.body;
   const user = await UserModel.findOne({ username });
   if (!user) {
@@ -59,9 +57,23 @@ AuthRouter.post("/login", async (req, res) => {
       .status(500)
       .send({ type: "error", message: "Something went wrong" });
   }
-});
+};
 
-module.exports = { AuthRouter };
+const getProfile = async (req, res) => {
+  try {
+    let _id = req.user_data._id;
+    console.log(_id);
+
+    let profile = await UserModel.find({ _id });
+    return res.status(200).send({ type: "success", m: "SU", data: profile });
+  } catch (e) {
+    return res
+      .status(500)
+      .json({ type: "error", message: "Internal Error Occured" });
+  }
+};
+
+module.exports = { registerUser, loginUser, getProfile };
 // "email":"a@gmail.com",
 //   "number":12344455,
 //   "full_name":"Haresh Solanki",

@@ -1,8 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 const { connectDB } = require("./config/db");
-const { AuthRouter } = require("./routes/auth");
-const { PostsRouter } = require("./routes/posts");
+const authRouter = require("./routes/auth.route");
+const { postRoutes } = require("./routes/post.route");
 require("dotenv").config();
 const PORT = process.env.PORT || 8080;
 const app = express();
@@ -11,8 +11,8 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/auth", AuthRouter);
-app.use("/feed", PostsRouter);
+app.use("/auth", authRouter);
+app.use("/feed", postRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "Hello" });

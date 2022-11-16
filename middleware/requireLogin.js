@@ -4,7 +4,7 @@ const requireLogin = (req, res, next) => {
   const { authorization } = req.headers;
   if (!authorization) {
     return res
-      .status(404)
+      .status(401)
       .send({ type: "error", message: "Please login again" });
   }
   const token = authorization.split(" ")[1];
