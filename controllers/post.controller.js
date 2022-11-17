@@ -1,4 +1,3 @@
-const { CommentModel } = require("../models/CommentSchema");
 const { PostModel } = require("../models/PostSchema");
 
 // To get all Posts
@@ -18,6 +17,8 @@ const getAllPosts = async (req, res) => {
     res.status(500).json({ type: "error", message: "Something went wrong" });
   }
 };
+
+// only users post
 const getMyPosts = async (req, res) => {
   let userId = req.body.userId;
   try {
@@ -80,6 +81,7 @@ const deletePost = async (req, res) => {
   }
 };
 
+// To like post
 const likePost = async (req, res) => {
   try {
     PostModel.findByIdAndUpdate(
@@ -97,8 +99,12 @@ const likePost = async (req, res) => {
         res.status(200).send(result);
       }
     });
-  } catch (error) {}
+  } catch (error) {
+    return res.status(500).send({ type: "error", message: "An error occured" });
+  }
 };
+
+// to unlike post
 const unLikePost = async (req, res) => {
   try {
     PostModel.findByIdAndUpdate(
@@ -120,6 +126,8 @@ const unLikePost = async (req, res) => {
     return res.status(500).send({ type: "error", message: "An error occured" });
   }
 };
+
+// to comment on post
 
 const commentToPost = async (req, res) => {
   try {
