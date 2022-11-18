@@ -20,21 +20,39 @@ const getAllPosts = async (req, res) => {
 };
 
 // only users post
-const getMyPosts = async (req, res) => {
+const getMyProfile = async (req, res) => {
   let userId = req.body.userId;
   try {
-    PostModel.find({ postedBy: userId })
-      .populate("postedBy", "_id username")
-      .then((posts) =>
-        res.status(201).send({ type: "success", myPosts: posts })
-      )
-      .catch((err) =>
-        res.status(500).send({ type: "error", message: "An error occured" })
-      );
-  } catch (e) {
-    // console.log(e);
-    res.status(500).json({ type: "error", message: "Something went wrong" });
+    UserModel.findOne({ _id: userId })
+      .select("-password")
+      .then((user) => {
+        PostModel.find({ postedBy: userId })
+          .populate("postedBy", "_id username")
+          .exec((err, posts) => {
+            if (err) {
+              return res
+                .status(404)
+                .json({ type: "error", message: "An error occured" });
+            }
+            return res.status(201).send({ user, posts });
+          });
+      });
+  } catch (error) {
+    return res.status(404).send({ type: "error", message: "User not found" });
   }
+  // try {
+  //   PostModel.find({ postedBy: userId })
+  //     .populate("postedBy", "_id username")
+  //     .then((posts) =>
+  //       res.status(201).send({ type: "success", myPosts: posts })
+  //     )
+  //     .catch((err) =>
+  //       res.status(500).send({ type: "error", message: "An error occured" })
+  //     );
+  // } catch (e) {
+  //   // console.log(e);
+  //   res.status(500).json({ type: "error", message: "Something went wrong" });
+  // }
 };
 
 // To create an post
@@ -256,7 +274,7 @@ const unFollowTheUser = (req, res) => {
 
 module.exports = {
   getAllPosts,
-  getMyPosts,
+  getMyProfile,
   createPost,
   deletePost,
   commentToPost,

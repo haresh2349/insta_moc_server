@@ -6,14 +6,14 @@ const {
   likePost,
   unLikePost,
   commentToPost,
-  getMyPosts,
+  getMyProfile,
 } = require("../controllers/post.controller");
 const { requireLogin } = require("../middleware/requireLogin");
 
 const postRoutes = express.Router();
 
 postRoutes.get("/all", requireLogin, getAllPosts);
-postRoutes.get("/myPosts", requireLogin, getMyPosts);
+postRoutes.get("/myProfile", requireLogin, getMyProfile);
 postRoutes.post("/upload", requireLogin, createPost);
 postRoutes.post("/comment/:id", requireLogin, commentToPost);
 postRoutes.post("/like/:id", requireLogin, likePost);
