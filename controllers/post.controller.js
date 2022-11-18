@@ -1,4 +1,5 @@
 const { PostModel } = require("../models/PostSchema");
+const { UserModel } = require("../models/UserSchema");
 
 // To get all Posts
 const getAllPosts = async (req, res) => {
@@ -159,6 +160,100 @@ const commentToPost = async (req, res) => {
   }
 };
 
+// See Profile of other user
+
+const getProfile = (req, res) => {
+  try {
+    UserModel.findOne({ _id: req.params.id })
+      .select("-password")
+      .then((user) => {
+        PostModel.find({ postedBy: req.params.id })
+          .populate("postedBy", "_id username")
+          .exec((err, posts) => {
+            if (err) {
+              return res
+                .status(404)
+                .json({ type: "error", message: "An error occured" });
+            }
+            return res.status(201).send({ user, posts });
+          });
+      });
+  } catch (error) {
+    return res.status(404).send({ type: "error", message: "User not found" });
+  }
+};
+
+// To follow the user
+
+const followTheUser = (req, res) => {
+  try {
+    UserModel.findByIdAndUpdate(
+      req.body.followId,
+      {
+        $push: { followers: req.body.userId },
+      },
+      {
+        new: true,
+      },
+      (err, result) => {
+        if (err) {
+          return res.status(422).json({ error: err });
+        }
+        UserModel.findByIdAndUpdate(
+          req.body.userId,
+          {
+            $push: { following: req.body.followId },
+          },
+          {
+            new: true,
+          }
+        )
+          .then((result) => res.json(result))
+          .catch((err) => {
+            return res.status(422).json({ error: err });
+          });
+      }
+    );
+  } catch (error) {
+    return res.status(500).send({ type: "error", message: "An error occured" });
+  }
+};
+// To unfollow the user
+
+const unFollowTheUser = (req, res) => {
+  try {
+    UserModel.findByIdAndUpdate(
+      req.body.unfollowId,
+      {
+        $pull: { followers: req.body.userId },
+      },
+      {
+        new: true,
+      },
+      (err, result) => {
+        if (err) {
+          return res.status(422).json({ error: err });
+        }
+        UserModel.findByIdAndUpdate(
+          req.body.userId,
+          {
+            $pull: { following: req.body.unfollowId },
+          },
+          {
+            new: true,
+          }
+        )
+          .then((result) => res.json(result))
+          .catch((err) => {
+            return res.status(422).json({ error: err });
+          });
+      }
+    );
+  } catch (error) {
+    return res.status(500).send({ type: "error", message: "An error occured" });
+  }
+};
+
 module.exports = {
   getAllPosts,
   getMyPosts,
@@ -167,4 +262,7 @@ module.exports = {
   commentToPost,
   likePost,
   unLikePost,
+  getProfile,
+  followTheUser,
+  unFollowTheUser,
 };
