@@ -6,7 +6,7 @@ const getAllPosts = async (req, res) => {
   let userId = req.body.userId;
   try {
     PostModel.find()
-      .populate("postedBy", "_id username")
+      .populate("postedBy", "_id username profilePhoto")
       .then((posts) =>
         res.status(201).send({ type: "success", allPsts: posts })
       )
