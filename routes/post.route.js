@@ -15,9 +15,9 @@ const postRoutes = express.Router();
 postRoutes.get("/all", requireLogin, getAllPosts);
 postRoutes.get("/myProfile", requireLogin, getMyProfile);
 postRoutes.post("/upload", requireLogin, createPost);
-postRoutes.post("/comment/:id", requireLogin, commentToPost);
-postRoutes.post("/like/:id", requireLogin, likePost);
-postRoutes.post("/unlike/:id", requireLogin, unLikePost);
-postRoutes.delete("/delete/:id", requireLogin, deletePost);
+postRoutes.post("/comment", requireLogin, commentToPost);
+postRoutes.post("/like", requireLogin, likePost);
+postRoutes.post("/unlike", requireLogin, unLikePost);
+postRoutes.delete("/delete", requireLogin, deletePost);
 
 module.exports = { postRoutes };
