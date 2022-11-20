@@ -151,10 +151,10 @@ const unLikePost = async (req, res) => {
 const commentToPost = async (req, res) => {
   try {
     const { userId } = req.body;
-    const user = UserModel.findOne({ userId });
+    const user = await UserModel.findOne({ userId });
     const comment = {
       comment: req.body.comment,
-      postedBy: { userId, username: user.username },
+      postedBy: { _id: userId, username: user.username },
     };
     PostModel.findByIdAndUpdate(
       req.body.postId,
