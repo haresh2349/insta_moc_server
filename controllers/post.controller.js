@@ -154,8 +154,9 @@ const commentToPost = async (req, res) => {
     const user = await UserModel.findOne({ userId });
     const comment = {
       comment: req.body.comment,
-      postedBy: { _id: userId, username: user.username },
+      postedBy: { userId, username: user.username },
     };
+    console.log(comment);
     PostModel.findByIdAndUpdate(
       req.body.postId,
       {
