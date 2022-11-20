@@ -104,7 +104,7 @@ const deletePost = async (req, res) => {
 const likePost = async (req, res) => {
   try {
     PostModel.findByIdAndUpdate(
-      req.params.id,
+      req.body.postId,
       {
         $push: { likes: req.body.userId },
       },
@@ -127,7 +127,7 @@ const likePost = async (req, res) => {
 const unLikePost = async (req, res) => {
   try {
     PostModel.findByIdAndUpdate(
-      req.params.id,
+      req.body.postId,
       {
         $pull: { likes: req.body.userId },
       },
@@ -156,7 +156,7 @@ const commentToPost = async (req, res) => {
       postedBy: userId,
     };
     PostModel.findByIdAndUpdate(
-      req.params.id,
+      req.body.postId,
       {
         $push: { comments: comment },
       },
