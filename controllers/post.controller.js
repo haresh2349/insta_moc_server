@@ -2,13 +2,14 @@ const { PostModel } = require("../models/PostSchema");
 const { UserModel } = require("../models/UserSchema");
 
 // To get all Posts
-const getAllPosts = async (req, res) => {
+const getAllPosts = (req, res) => {
   let userId = req.body.userId;
   try {
-    PostModel.find()
-      .populate("postedBy", "_id username profilePhoto")
+    PostModel.find({})
+      .populate("postedBy", "_id profilePhoto username")
+      .sort("-createdAt")
       .then((posts) =>
-        res.status(201).send({ type: "success", allPsts: posts })
+        res.status(201).send({ type: "success", allPosts: posts })
       )
       .catch((err) =>
         res.status(500).send({ type: "error", message: "An error occured" })
@@ -19,15 +20,35 @@ const getAllPosts = async (req, res) => {
   }
 };
 
+// get posts of following users
+
+const getFollowingsPosts = async (req, res) => {
+  const { userId } = req.body;
+  try {
+    const user = await UserModel.findOne({ _id: userId });
+    PostModel.find({ postedBy: { $in: user.following } })
+      .populate("postedBy", "_id username profilePhoto")
+      .populate("postedBy.comments", "_id username profilePhoto")
+      .then((posts) => {
+        res.send(posts);
+      });
+  } catch (error) {
+    res.json(error);
+  }
+};
+
 // only users post
 const getMyProfile = async (req, res) => {
+  console.log("getin");
   let userId = req.body.userId;
   try {
     UserModel.findOne({ _id: userId })
       .select("-password")
       .then((user) => {
         PostModel.find({ postedBy: userId })
-          .populate("postedBy", "_id username")
+          .populate("postedBy", "_id username profilePhoto")
+          // .populate("comments.postedBy", "_id username profilePhoto")
+          .sort("-createdAt")
           .exec((err, posts) => {
             if (err) {
               return res
@@ -38,21 +59,9 @@ const getMyProfile = async (req, res) => {
           });
       });
   } catch (error) {
+    console.log(error);
     return res.status(404).send({ type: "error", message: "User not found" });
   }
-  // try {
-  //   PostModel.find({ postedBy: userId })
-  //     .populate("postedBy", "_id username")
-  //     .then((posts) =>
-  //       res.status(201).send({ type: "success", myPosts: posts })
-  //     )
-  //     .catch((err) =>
-  //       res.status(500).send({ type: "error", message: "An error occured" })
-  //     );
-  // } catch (e) {
-  //   // console.log(e);
-  //   res.status(500).json({ type: "error", message: "Something went wrong" });
-  // }
 };
 
 // To create an post
@@ -60,7 +69,7 @@ const createPost = async (req, res) => {
   const { caption, photo } = req.body;
   try {
     const post = await new PostModel({
-      caption,
+      caption: caption || "",
       photo,
       postedBy: req.body.userId,
       deleted: false,
@@ -77,7 +86,7 @@ const createPost = async (req, res) => {
 // To delete an post
 const deletePost = async (req, res) => {
   try {
-    PostModel.findOne({ _id: req.params.id })
+    PostModel.findOne({ _id: req.params.postId })
       .populate("postedBy", "_id")
       .exec((err, post) => {
         if (err || !post) {
@@ -151,12 +160,15 @@ const unLikePost = async (req, res) => {
 const commentToPost = async (req, res) => {
   try {
     const { userId } = req.body;
-    const user = await UserModel.findOne({ userId });
+    const user = await UserModel.findOne({ _id: userId });
     const comment = {
       comment: req.body.comment,
-      postedBy: { userId, username: user.username },
+      postedBy: {
+        _id: userId,
+        username: user.username,
+        profilePhoto: user.profilePhoto,
+      },
     };
-    console.log(comment);
     PostModel.findByIdAndUpdate(
       req.body.postId,
       {
@@ -166,7 +178,8 @@ const commentToPost = async (req, res) => {
         new: true,
       }
     )
-      .populate("comments.postedBy", "_id username")
+      .populate("comments.postedBy", "_id username profilePhoto")
+      .populate("postedBy", "_id username")
       .exec((err, result) => {
         if (err) {
           console.log(err);
@@ -177,6 +190,20 @@ const commentToPost = async (req, res) => {
       });
   } catch (error) {
     return res.status(500).send({ type: "error", message: "An error occured" });
+  }
+};
+
+// search users
+
+const searchUser = (req, res) => {
+  console.log(req.params.username);
+  try {
+    var regex = new RegExp(req.params.username, "i");
+    UserModel.find({ username: regex }).then((result) => {
+      res.status(200).json(result);
+    });
+  } catch (error) {
+    console.log(error);
   }
 };
 
@@ -199,6 +226,7 @@ const getProfile = (req, res) => {
           });
       });
   } catch (error) {
+    console.log(error);
     return res.status(404).send({ type: "error", message: "User not found" });
   }
 };
@@ -274,6 +302,21 @@ const unFollowTheUser = (req, res) => {
   }
 };
 
+const editProfilePic = async (req, res) => {
+  const { userId } = req.body;
+  try {
+    const result = await UserModel.updateOne(
+      { _id: userId },
+      {
+        $set: { profilePhoto: req.body.profilePhoto },
+      }
+    );
+    return res.status(200).send(result);
+  } catch (error) {
+    return res.status(500).json(error);
+  }
+};
+
 module.exports = {
   getAllPosts,
   getMyProfile,
@@ -285,4 +328,7 @@ module.exports = {
   getProfile,
   followTheUser,
   unFollowTheUser,
+  searchUser,
+  editProfilePic,
+  getFollowingsPosts,
 };
