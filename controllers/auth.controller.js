@@ -59,23 +59,4 @@ const loginUser = async (req, res) => {
   }
 };
 
-const getProfile = async (req, res) => {
-  try {
-    let _id = req.user_data._id;
-    console.log(_id);
-
-    let profile = await UserModel.find({ _id });
-    return res.status(200).send({ type: "success", data: profile });
-  } catch (e) {
-    return res
-      .status(500)
-      .json({ type: "error", message: "Internal Error Occured" });
-  }
-};
-
-module.exports = { registerUser, loginUser, getProfile };
-// "email":"a@gmail.com",
-//   "number":12344455,
-//   "full_name":"Haresh Solanki",
-//   "username":"haresh007",
-//   "password":"test"
+module.exports = { registerUser, loginUser };
