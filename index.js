@@ -6,7 +6,13 @@ const { postRoutes } = require("./routes/post.route");
 require("dotenv").config();
 const PORT = process.env.PORT || 8080;
 const app = express();
-app.use(cors());
+var options = {
+  origin: "*",
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+};
+app.use(cors(options));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
