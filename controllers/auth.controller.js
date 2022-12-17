@@ -47,11 +47,10 @@ const loginUser = async (req, res) => {
           message: "Logged in successfully",
           token: token,
         });
-      } else {
-        return res
-          .status(500)
-          .send({ type: "error", message: "Please enter right credentials" });
       }
+      return res
+        .status(500)
+        .send({ type: "error", message: "Please enter correct password" });
     });
   } catch (error) {
     return res
