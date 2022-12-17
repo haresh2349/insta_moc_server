@@ -40,17 +40,18 @@ const loginUser = async (req, res) => {
   const hash = user.password;
   try {
     bcrypt.compare(password, hash, function (err, result) {
-      if (err) {
+      if (result) {
+        const token = jwt.sign({ userId: user._id }, process.env.SECRETKEY);
+        return res.status(201).send({
+          type: "success",
+          message: "Logged in successfully",
+          token: token,
+        });
+      } else {
         return res
           .status(500)
           .send({ type: "error", message: "Please enter right credentials" });
       }
-      const token = jwt.sign({ userId: user._id }, process.env.SECRETKEY);
-      return res.status(201).send({
-        type: "success",
-        message: "Logged in successfully",
-        token: token,
-      });
     });
   } catch (error) {
     return res
